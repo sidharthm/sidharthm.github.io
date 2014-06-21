@@ -1,115 +1,156 @@
 <!DOCTYPE html>
-<html>
-<canvas id="myCanvas" width="600" height="600"style="border:1px solid #000000;">
-	<script>
-			var turn = 0;
-			var won = false;
-			var canStillPlay = true;
-			var board = new Array();
-			for (var i = 0; i < 9; i++){
-				board[i] = ' ';
-			}
-	
-			var c = document.getElementById("myCanvas");
-			var ctx = c.getContext("2d");
-			draw();
-			
-			c.addEventListener("click", function(evt){
-				if (!won){
-					var mousePos = getMousePos(c,evt);
-					makeMove(mousePos.x,mousePos.y);
-					draw();
-					checkWin();
-				} else {
-					for (var i = 0; i < 9; i++){
-						board[i] = ' ';
-					}
-					turn = 0;
-					won = false;					
-					canStillPlay = true;
-					draw();
-				}
-			});
-			function getMousePos(canvas,evt){
-				var rect = canvas.getBoundingClientRect();
-				return {
-				  x: evt.clientX - rect.left,
-				  y: evt.clientY - rect.top
-				};
-			}
-			function makeMove(xcoord,ycoord){
-				var board_x = Math.floor(xcoord / 200);
-				var board_y = Math.floor(ycoord / 200); 
-				var index = board_x + (3 * board_y);
-				if (turn % 2 == 0 && board[index] == ' '){
-					board[index] = 'O';
-					turn += 1;
-				}else if (board[index] == ' '){
-					board[index] = 'X';
-					turn += 1;
-				}
-			}
-			function draw(){
-				ctx.beginPath();
-				ctx.fillStyle = "#FFFFFF";
-				ctx.fillRect(0,0,c.width,c.height);
-				ctx.strokeStyle = "#000000";
-				ctx.moveTo(200,0);
-				ctx.lineTo(200,600);
-				ctx.stroke();
-				ctx.moveTo(400,0);
-				ctx.lineTo(400,600);
-				ctx.stroke();
-				ctx.moveTo(0,200);
-				ctx.lineTo(600,200);
-				ctx.stroke();
-				ctx.moveTo(0,400);
-				ctx.lineTo(600,400);
-				ctx.stroke();				
-				for (var i = 0; i < 9; i++){
-					var yco = Math.floor(i/3);
-					var xco = i%3;
-					if (board[i] == 'O'){
-						ctx.beginPath();
-						ctx.arc((xco*200)+100,(yco*200)+100,50,0,2*Math.PI, false);
-						ctx.stroke();
-					}
-					else if (board[i] == 'X'){
-						ctx.beginPath();
-						ctx.moveTo((xco*200)+50,(yco*200)+50);
-						ctx.lineTo((xco*200)+150,(yco*200)+150);
-						ctx.moveTo((xco*200)+150,(yco*200)+50);
-						ctx.lineTo((xco*200)+50,(yco*200)+150);
-						ctx.stroke();
-					}
-				}
-			}
-			function checkWin(){
-				//check horizontals
-				if ((board[0] != ' ' && board[0] == board[1] && board[0] == board[2]) || (board[3] != ' ' && board[3] == board[4] && board[3] == board[5]) || (board[6] != ' ' && board[6] == board[7] && board[6] == board[8]))
-					won = true;
-				//check verticals
-				 else if ((board[0] != ' ' && board[0] == board[3] && board[0] == board[6]) || (board[1] != ' ' && board[1] == board[4] && board[1] == board[7]) || (board[2] != ' ' && board[2] == board[5] && board[2] == board[8]))
-					won = true;
-				//check diagonals
-				else if ((board[0] != ' ' && board[0] == board[4] && board[0] == board[8]) || (board[2] != ' ' && board[2] == board[4] && board[2] == board[6]))
-					won = true;
-				else {
-					canStillPlay = false;
-					for (var i = 0; i < 9; i++){
-						if (board[i] == ' ')
-							canStillPlay = true;
-					}
-				}
-				if (won)
-					alert("Game Over, Click Again to Restart");
-				else if (!canStillPlay){
-					won = true;
-					canStillPlay = true;
-					alert("Cat's Game, Click Again to Restart");
-				}
-			}
-	</script>
-</canvas>
 
+	<style>
+		.container-main{
+			margin-top: 75px;
+		}
+		.container-canvas{
+			margin: 0 auto;
+			width: 600px;
+		}
+		canvas{
+			border: 1px solid #000;
+		}
+	</style>
+	<head>
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+	</head>
+	<title>
+		Sidharth Menon
+	</title>
+	<body>
+	
+	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">	
+		<div class="navbar-header">
+			<button type="button" data-target="#navbarCollapse" data-toggle="collapse" class="navbar-toggle">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a href="#" class="navbar-brand">Sidharth Menon</a>
+		</div>
+		<div id="navbarCollapse" class="collapse navbar-collapse">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="#">Home</a></li>
+				<li><a href="#">Profile</a></li>
+				<li><a href="projects.htm">Projects</a></li>
+			</ul>
+		</div>
+    </div>
+	<div class="container container-main">
+		<div class="container-canvas">
+			<canvas id="myCanvas" width="600" height="600"style="border:1px solid #000000;">
+				<script>
+						var turn = 0;
+						var won = false;
+						var canStillPlay = true;
+						var board = new Array();
+						for (var i = 0; i < 9; i++){
+							board[i] = ' ';
+						}
+				
+						var c = document.getElementById("myCanvas");
+						var ctx = c.getContext("2d");
+						draw();
+						
+						c.addEventListener("click", function(evt){
+							if (!won){
+								var mousePos = getMousePos(c,evt);
+								makeMove(mousePos.x,mousePos.y);
+								draw();
+								checkWin();
+							} else {
+								for (var i = 0; i < 9; i++){
+									board[i] = ' ';
+								}
+								turn = 0;
+								won = false;					
+								canStillPlay = true;
+								draw();
+							}
+						});
+						function getMousePos(canvas,evt){
+							var rect = canvas.getBoundingClientRect();
+							return {
+							  x: evt.clientX - rect.left,
+							  y: evt.clientY - rect.top
+							};
+						}
+						function makeMove(xcoord,ycoord){
+							var board_x = Math.floor(xcoord / 200);
+							var board_y = Math.floor(ycoord / 200); 
+							var index = board_x + (3 * board_y);
+							if (turn % 2 == 0 && board[index] == ' '){
+								board[index] = 'O';
+								turn += 1;
+							}else if (board[index] == ' '){
+								board[index] = 'X';
+								turn += 1;
+							}
+						}
+						function draw(){
+							ctx.beginPath();
+							ctx.fillStyle = "#FFFFFF";
+							ctx.fillRect(0,0,c.width,c.height);
+							ctx.strokeStyle = "#000000";
+							ctx.moveTo(200,0);
+							ctx.lineTo(200,600);
+							ctx.stroke();
+							ctx.moveTo(400,0);
+							ctx.lineTo(400,600);
+							ctx.stroke();
+							ctx.moveTo(0,200);
+							ctx.lineTo(600,200);
+							ctx.stroke();
+							ctx.moveTo(0,400);
+							ctx.lineTo(600,400);
+							ctx.stroke();				
+							for (var i = 0; i < 9; i++){
+								var yco = Math.floor(i/3);
+								var xco = i%3;
+								if (board[i] == 'O'){
+									ctx.beginPath();
+									ctx.arc((xco*200)+100,(yco*200)+100,50,0,2*Math.PI, false);
+									ctx.stroke();
+								}
+								else if (board[i] == 'X'){
+									ctx.beginPath();
+									ctx.moveTo((xco*200)+50,(yco*200)+50);
+									ctx.lineTo((xco*200)+150,(yco*200)+150);
+									ctx.moveTo((xco*200)+150,(yco*200)+50);
+									ctx.lineTo((xco*200)+50,(yco*200)+150);
+									ctx.stroke();
+								}
+							}
+						}
+						function checkWin(){
+							//check horizontals
+							if ((board[0] != ' ' && board[0] == board[1] && board[0] == board[2]) || (board[3] != ' ' && board[3] == board[4] && board[3] == board[5]) || (board[6] != ' ' && board[6] == board[7] && board[6] == board[8]))
+								won = true;
+							//check verticals
+							 else if ((board[0] != ' ' && board[0] == board[3] && board[0] == board[6]) || (board[1] != ' ' && board[1] == board[4] && board[1] == board[7]) || (board[2] != ' ' && board[2] == board[5] && board[2] == board[8]))
+								won = true;
+							//check diagonals
+							else if ((board[0] != ' ' && board[0] == board[4] && board[0] == board[8]) || (board[2] != ' ' && board[2] == board[4] && board[2] == board[6]))
+								won = true;
+							else {
+								canStillPlay = false;
+								for (var i = 0; i < 9; i++){
+									if (board[i] == ' ')
+										canStillPlay = true;
+								}
+							}
+							if (won)
+								alert("Game Over, Click Again to Restart");
+							else if (!canStillPlay){
+								won = true;
+								canStillPlay = true;
+								alert("Cat's Game, Click Again to Restart");
+							}
+						}
+				</script>
+			</canvas>
+		</div>
+	</div>
 </html>

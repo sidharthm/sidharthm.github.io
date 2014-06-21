@@ -1,223 +1,265 @@
 <!DOCTYPE html>
 <html>
-<canvas id="myCanvas" width="600" height="600"style="border:1px solid #000000;">
-	<script>
-			var turn = 0;
-			var done = false;
-			var playerWin = false;
-			var botWin = false;
-
-			var canStillPlay = true;
-			var board = new Array();
-			for (var i = 0; i < 9; i++){
-				board[i] = ' ';
-			}
+	<style>
+		.container-main{
+			margin-top: 75px;
+		}
+		.container-canvas{
+			margin: 0 auto;
+			width: 600px;
+		}
+		canvas{
+			border: 1px solid #000;
+		}
+	</style>
+	<head>
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+	</head>
+	<title>
+		Sidharth Menon
+	</title>
+	<body>
 	
-			var c = document.getElementById("myCanvas");
-			var ctx = c.getContext("2d");
-			draw();
-			
-			c.addEventListener("click", function(evt){
-				if (!done){
-					var mousePos = getMousePos(c,evt);
-					makeMove(mousePos.x,mousePos.y);
-					draw();
-					checkWin();
-					if (!done){
-						var x = botMove(board,-1, 8,-1000000,100000,true); //smart thing to do would be depth = 9 - turn
-						console.log(x);
-						var boards = generateSuccessors(board,0)[0];
-						board = generateSuccessors(board,0)[0][x[0]];
-						turn += 1;
-						draw();
-						checkWin();
-					}
-				} else {
-					for (var i = 0; i < 9; i++){
-						board[i] = ' ';
-					}
-					turn = 0;
-					done = false;					
-					canStillPlay = true;
-					draw();
-				}
-			});
-			function getMousePos(canvas,evt){
-				var rect = canvas.getBoundingClientRect();
-				return {
-				  x: evt.clientX - rect.left,
-				  y: evt.clientY - rect.top
-				};
-			}
-			function makeMove(xcoord,ycoord){
-				var board_x = Math.floor(xcoord / 200);
-				var board_y = Math.floor(ycoord / 200); 
-				var index = board_x + (3 * board_y);
-				if (turn % 2 == 0 && board[index] == ' '){
-					board[index] = 'O';
-					turn += 1;
-				}
-			}
-			function botMove(cB, m, d, alpha,beta,botMoving){
-				var currentBoard = cB.slice(0);
-				var successors = generateSuccessors(currentBoard, d);
-				var bestMove = m;
-				
-				if (d == 0 || botCheckWin(currentBoard) != 0 || successors[1] == 0){
-					return [bestMove,botCheckWin(currentBoard)];
-				}
-				if (botMoving){
-					//console.log("X expansion @ " + d);
-					for (var x  = 0; x < successors[1]; x++){
-						var calculation = botMove(successors[0][x], x, d - 1,alpha,beta,false);
-						if (calculation[1] > alpha){
-							alpha = Math.max(alpha,calculation[1]);
-							bestMove = x;
-						}
-						if (beta <= alpha)
-							break;
-					}
-					return [bestMove,alpha];
-				} else {
-					//console.log("O expansion @" + d);
-					for (var x = 0; x < successors[1]; x++){
-						beta = Math.min(beta,botMove(successors[0][x], x, d - 1, alpha, beta, true)[1]);
-						if (beta <= alpha)
-							break;
-					}
-					return [m,beta];
-				}
-			}
-			function generateSuccessors(cB, d){
-				var result = {};
-				var numSuccessors = 0;
-				for (var i = 0; i < 9; i++){
-					if (cB[i] == ' ' && d % 2 == 0){
-						result[numSuccessors] = cB.slice(0);
-						result[numSuccessors][i] = 'X';
-						numSuccessors++;
-					} else if (cB[i] == ' '){
-						result[numSuccessors] = cB.slice(0);
-						result[numSuccessors][i] = 'O';
-						numSuccessors++;
-					}
-				}
-				return [result,numSuccessors];
-			}
-			function botCheckWin(B){
-				var winningLetter = ' ';
-				for (var j = 0; j < 9; j+=3){
-					//check horizontals
-					if (B[j] != ' ' && B[j] == B[j+1] && B[j] == B[j+2]){
-						winningLetter = B[j];
-					}
-				}
-				for (var k = 0; k < 3; k++){
-					//check verticals
-					if (B[k] != ' ' && B[k] == B[k+3] && B[k] == B[k+6]){
-						winningLetter = B[k];
-					}
-				}
-				//check diagonals
-				if (B[0] != ' ' && B[0] == B[4] && B[0] == B[8]){
-					winningLetter = B[0];
-				}
-				if (B[2] != ' ' && B[2] == B[4] && B[2] == B[6]){
-					winningLetter = B[2];
-				}
-				if (winningLetter == 'X')
-					return 1;
-				else if (winningLetter == 'O')
-					return -1;
-				
-				return 0;
-				
-			}
-			function draw(){
-				ctx.beginPath();
-				ctx.fillStyle = "#FFFFFF";
-				ctx.fillRect(0,0,c.width,c.height);
-				ctx.strokeStyle = "#000000";
-				ctx.moveTo(200,0);
-				ctx.lineTo(200,600);
-				ctx.stroke();
-				ctx.moveTo(400,0);
-				ctx.lineTo(400,600);
-				ctx.stroke();
-				ctx.moveTo(0,200);
-				ctx.lineTo(600,200);
-				ctx.stroke();
-				ctx.moveTo(0,400);
-				ctx.lineTo(600,400);
-				ctx.stroke();				
-				for (var i = 0; i < 9; i++){
-					var yco = Math.floor(i/3);
-					var xco = i%3;
-					if (board[i] == 'O'){
-						ctx.beginPath();
-						ctx.arc((xco*200)+100,(yco*200)+100,50,0,2*Math.PI, false);
-						ctx.stroke();
-					}
-					else if (board[i] == 'X'){
-						ctx.beginPath();
-						ctx.moveTo((xco*200)+50,(yco*200)+50);
-						ctx.lineTo((xco*200)+150,(yco*200)+150);
-						ctx.moveTo((xco*200)+150,(yco*200)+50);
-						ctx.lineTo((xco*200)+50,(yco*200)+150);
-						ctx.stroke();
-					}
-				}
-			}
-			function checkWin(){
-				var winningLetter = ' ';
-				console.log(turn);
-				console.log(board);
-				for (var j = 0; j < 9; j+=3){
-					//check horizontals
-					if (board[j] != ' ' && board[j] == board[j+1] && board[j] == board[j+2]){
-						winningLetter = board[j];
-						done = true;
-					}
-				}
-				for (var k = 0; k < 3; k++){
-					//check verticals
-					if (board[k] != ' ' && board[k] == board[k+3] && board[k] == board[k+6]){
-						winningLetter = board[k];
-						done = true;
-					}
-				}
-				//check diagonals
-				if (board[0] != ' ' && board[0] == board[4] && board[0] == board[8]){
-					winningLetter = board[0];
-					done = true;
-				}
-				if (board[2] != ' ' && board[2] == board[4] && board[2] == board[6]){
-					winningLetter = board[2];
-					console.log(winningLetter);
-					done = true;
-				}
-				
-				playerWin = done && winningLetter == 'O';
-				botWin = done && winningLetter == 'X';
-				if (!done){		
-					canStillPlay = false;
-					for (var i = 0; i < 9; i++){
-						if (board[i] == ' ')
-							canStillPlay = true;
-					}
-				}
-				if (done){
-					if (playerWin)
-						alert("You win! Click again to restart!");
-					else 
-						alert("You lose! Click again to restart!");
-				}else if (!canStillPlay){
-					done = true;
-					canStillPlay = true;
-					alert("Cat's Game, Click Again to Restart");
-				}
-			}
-	</script>
-</canvas>
+	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">	
+		<div class="navbar-header">
+			<button type="button" data-target="#navbarCollapse" data-toggle="collapse" class="navbar-toggle">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a href="#" class="navbar-brand">Sidharth Menon</a>
+		</div>
+		<div id="navbarCollapse" class="collapse navbar-collapse">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="#">Home</a></li>
+				<li><a href="#">Profile</a></li>
+				<li><a href="projects.htm">Projects</a></li>
+			</ul>
+		</div>
+    </div>
+	<div class="container container-main">
+		<div class="container-canvas">
 
+			<canvas id="myCanvas" width="600" height="600"style="border:1px solid #000000;">
+				<script>
+						var turn = 0;
+						var done = false;
+						var playerWin = false;
+						var botWin = false;
+
+						var canStillPlay = true;
+						var board = new Array();
+						for (var i = 0; i < 9; i++){
+							board[i] = ' ';
+						}
+				
+						var c = document.getElementById("myCanvas");
+						var ctx = c.getContext("2d");
+						draw();
+						
+						c.addEventListener("click", function(evt){
+							if (!done){
+								var mousePos = getMousePos(c,evt);
+								makeMove(mousePos.x,mousePos.y);
+								draw();
+								checkWin();
+								if (!done){
+									var x = botMove(board,-1, 8,-1000000,100000,true); //smart thing to do would be depth = 9 - turn
+									console.log(x);
+									var boards = generateSuccessors(board,0)[0];
+									board = generateSuccessors(board,0)[0][x[0]];
+									turn += 1;
+									draw();
+									checkWin();
+								}
+							} else {
+								for (var i = 0; i < 9; i++){
+									board[i] = ' ';
+								}
+								turn = 0;
+								done = false;					
+								canStillPlay = true;
+								draw();
+							}
+						});
+						function getMousePos(canvas,evt){
+							var rect = canvas.getBoundingClientRect();
+							return {
+							  x: evt.clientX - rect.left,
+							  y: evt.clientY - rect.top
+							};
+						}
+						function makeMove(xcoord,ycoord){
+							var board_x = Math.floor(xcoord / 200);
+							var board_y = Math.floor(ycoord / 200); 
+							var index = board_x + (3 * board_y);
+							if (turn % 2 == 0 && board[index] == ' '){
+								board[index] = 'O';
+								turn += 1;
+							}
+						}
+						function botMove(cB, m, d, alpha,beta,botMoving){
+							var currentBoard = cB.slice(0);
+							var successors = generateSuccessors(currentBoard, d);
+							var bestMove = m;
+							
+							if (d == 0 || botCheckWin(currentBoard) != 0 || successors[1] == 0){
+								return [bestMove,botCheckWin(currentBoard)];
+							}
+							if (botMoving){
+								//console.log("X expansion @ " + d);
+								for (var x  = 0; x < successors[1]; x++){
+									var calculation = botMove(successors[0][x], x, d - 1,alpha,beta,false);
+									if (calculation[1] > alpha){
+										alpha = Math.max(alpha,calculation[1]);
+										bestMove = x;
+									}
+									if (beta <= alpha)
+										break;
+								}
+								return [bestMove,alpha];
+							} else {
+								//console.log("O expansion @" + d);
+								for (var x = 0; x < successors[1]; x++){
+									beta = Math.min(beta,botMove(successors[0][x], x, d - 1, alpha, beta, true)[1]);
+									if (beta <= alpha)
+										break;
+								}
+								return [m,beta];
+							}
+						}
+						function generateSuccessors(cB, d){
+							var result = {};
+							var numSuccessors = 0;
+							for (var i = 0; i < 9; i++){
+								if (cB[i] == ' ' && d % 2 == 0){
+									result[numSuccessors] = cB.slice(0);
+									result[numSuccessors][i] = 'X';
+									numSuccessors++;
+								} else if (cB[i] == ' '){
+									result[numSuccessors] = cB.slice(0);
+									result[numSuccessors][i] = 'O';
+									numSuccessors++;
+								}
+							}
+							return [result,numSuccessors];
+						}
+						function botCheckWin(B){
+							var winningLetter = ' ';
+							for (var j = 0; j < 9; j+=3){
+								//check horizontals
+								if (B[j] != ' ' && B[j] == B[j+1] && B[j] == B[j+2]){
+									winningLetter = B[j];
+								}
+							}
+							for (var k = 0; k < 3; k++){
+								//check verticals
+								if (B[k] != ' ' && B[k] == B[k+3] && B[k] == B[k+6]){
+									winningLetter = B[k];
+								}
+							}
+							//check diagonals
+							if (B[0] != ' ' && B[0] == B[4] && B[0] == B[8]){
+								winningLetter = B[0];
+							}
+							if (B[2] != ' ' && B[2] == B[4] && B[2] == B[6]){
+								winningLetter = B[2];
+							}
+							if (winningLetter == 'X')
+								return 1;
+							else if (winningLetter == 'O')
+								return -1;
+							
+							return 0;
+							
+						}
+						function draw(){
+							ctx.beginPath();
+							ctx.fillStyle = "#FFFFFF";
+							ctx.fillRect(0,0,c.width,c.height);
+							ctx.strokeStyle = "#000000";
+							ctx.moveTo(200,0);
+							ctx.lineTo(200,600);
+							ctx.stroke();
+							ctx.moveTo(400,0);
+							ctx.lineTo(400,600);
+							ctx.stroke();
+							ctx.moveTo(0,200);
+							ctx.lineTo(600,200);
+							ctx.stroke();
+							ctx.moveTo(0,400);
+							ctx.lineTo(600,400);
+							ctx.stroke();				
+							for (var i = 0; i < 9; i++){
+								var yco = Math.floor(i/3);
+								var xco = i%3;
+								if (board[i] == 'O'){
+									ctx.beginPath();
+									ctx.arc((xco*200)+100,(yco*200)+100,50,0,2*Math.PI, false);
+									ctx.stroke();
+								}
+								else if (board[i] == 'X'){
+									ctx.beginPath();
+									ctx.moveTo((xco*200)+50,(yco*200)+50);
+									ctx.lineTo((xco*200)+150,(yco*200)+150);
+									ctx.moveTo((xco*200)+150,(yco*200)+50);
+									ctx.lineTo((xco*200)+50,(yco*200)+150);
+									ctx.stroke();
+								}
+							}
+						}
+						function checkWin(){
+							var winningLetter = ' ';
+							console.log(turn);
+							console.log(board);
+							for (var j = 0; j < 9; j+=3){
+								//check horizontals
+								if (board[j] != ' ' && board[j] == board[j+1] && board[j] == board[j+2]){
+									winningLetter = board[j];
+									done = true;
+								}
+							}
+							for (var k = 0; k < 3; k++){
+								//check verticals
+								if (board[k] != ' ' && board[k] == board[k+3] && board[k] == board[k+6]){
+									winningLetter = board[k];
+									done = true;
+								}
+							}
+							//check diagonals
+							if (board[0] != ' ' && board[0] == board[4] && board[0] == board[8]){
+								winningLetter = board[0];
+								done = true;
+							}
+							if (board[2] != ' ' && board[2] == board[4] && board[2] == board[6]){
+								winningLetter = board[2];
+								console.log(winningLetter);
+								done = true;
+							}
+							
+							playerWin = done && winningLetter == 'O';
+							botWin = done && winningLetter == 'X';
+							if (!done){		
+								canStillPlay = false;
+								for (var i = 0; i < 9; i++){
+									if (board[i] == ' ')
+										canStillPlay = true;
+								}
+							}
+							if (done){
+								if (playerWin)
+									alert("You win! Click again to restart!");
+								else 
+									alert("You lose! Click again to restart!");
+							}else if (!canStillPlay){
+								done = true;
+								canStillPlay = true;
+								alert("Cat's Game, Click Again to Restart");
+							}
+						}
+				</script>
+			</canvas>
+		</div>
+	</div>
 </html>
